@@ -1,21 +1,10 @@
-// TodoManager owns the whole app: task data, persistence, and rendering.
-class TodoManager {
-  constructor(containerId) {
-    this.tasks = [];
-    this.container = document.getElementById(containerId);
-    this.loadTasks();
-  }
-
-  loadTasks() {
-    const raw = localStorage.getItem('todo-tasks');
-    this.tasks = raw ? JSON.parse(raw) : [];
-  }
-
-  saveTasks() {
-    localStorage.setItem('todo-tasks', JSON.stringify(this.tasks));
-  }
-
-  addTask(description, type) {
+//ToDoService
+class ToDoService{
+    constructor(storage){
+      this.storage = storage;
+    }
+    
+    addTask(description, type) {
     const trimmed = description.trim();
     if (trimmed.length < 3) {
       alert('Task needs at least a few characters.');
@@ -58,7 +47,14 @@ class TodoManager {
     this.saveTasks();
     this.render();
   }
+}
 
+//ToDoRender
+class ToDoRender{
+  constructor(container, service){
+    this.container = container;
+    this.service = service;
+  }
   renderPendingRows() {
     let html = '';
     for (const task of this.tasks) {
@@ -120,6 +116,18 @@ class TodoManager {
   }
 }
 
+//ToDoStorage
+class ToDoStorage{
+  loadTasks() {
+    const raw = localStorage.getItem('todo-tasks');
+    this.tasks = raw ? JSON.parse(raw) : [];
+  }
+
+  saveTasks() {
+    localStorage.setItem('todo-tasks', JSON.stringify(this.tasks));
+  }
+}
+
 // Builds the markup for a single row. Called from both render lists below.
 function buildTaskRow(id, desc, completed, priority, createdAt, showActions) {
   const label = desc.length > 40 ? `${desc.slice(0, 40)}...` : desc;
@@ -160,6 +168,10 @@ function summarizeWorkload(manager) {
 }
 
 window.addEventListener('DOMContentLoaded', () => {
+  const storage = new ToDoStorage();
+  const myService = new ToDoService(storage);
+  const divT = document.getElementById('task-container');
+  const todoRenderObject = new ToDoRender(divT, myService);
   const app = new TodoManager('task-container');
   app.render();
 
